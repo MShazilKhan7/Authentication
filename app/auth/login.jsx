@@ -1,32 +1,20 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, TextInput, Button, Text, StyleSheet } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import axios from "axios";
+import { AuthProvider, useAuth } from "../../components/context/AuthContext";
+import { Redirect, router } from "expo-router";
 
 const Login = () => {
   const { control, handleSubmit } = useForm();
+  const { onRegister, onLogin, authState } = useAuth();
 
-  const onSubmit = async (data) => {
-    const { email, password } = data;
-    console.log(data);
-    if (!(email && password)) {
-      return;
+  useEffect(() => {
+    console.log("login useEffect....");
+    if (authState.authenticated) {
+      router.replace("/home"); // replacing the current route with home..
     }
-    try {
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/login",
-        data,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      console.log(response.data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  }, [authState.authenticated]);
 
   return (
     <View style={styles.container}>
@@ -53,7 +41,7 @@ const Login = () => {
           />
         )}
       />
-      <Button title="Submit" onPress={handleSubmit(onSubmit)} />
+      <Button title="Submit" onPress={handleSubmit(onLogin)} />
     </View>
   );
 };

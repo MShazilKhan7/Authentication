@@ -9,14 +9,14 @@ const app = express();
 
 // Middlewares
 
-app.use(bodyParser());
+app.use(bodyParser.json());
 app.use(cors());
 app.use("/api/auth", authRoutes); // Corrected route prefix with a leading slash
 
 // Connection URL (ensure the database name is specified)
 const url = process.env.MONGO_URL;
 mongoose
-  .connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(url)
   .then(() => {
     console.log("Connected to database");
   })

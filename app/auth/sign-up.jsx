@@ -2,34 +2,12 @@ import React from "react";
 import { View, TextInput, Button, Text, StyleSheet } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import axios from "axios";
+import { AuthProvider, useAuth } from "../../components/context/AuthContext";
+
 const Login = () => {
   const { control, handleSubmit } = useForm();
+  const { onLogin, onRegister } = useAuth();
 
-  const onSubmit = async (data) => {
-    console.log("data:", data);
-    const { email, username, password } = data;
-    try {
-      if (email && password && username) {
-        console.log("yes...");
-        const response = await axios.post(
-          "http://localhost:5000/api/auth/signup/", // Replace with your local IP address
-          {
-            email,
-            username,
-            password,
-          },
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        console.log(response.data);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Sign Up</Text>
@@ -66,7 +44,7 @@ const Login = () => {
           />
         )}
       />
-      <Button title="Submit" onPress={handleSubmit(onSubmit)} />
+      <Button title="Submit" onPress={handleSubmit(onRegister)} />
     </View>
   );
 };

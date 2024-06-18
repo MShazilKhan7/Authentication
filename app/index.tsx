@@ -5,7 +5,6 @@ import { router } from "expo-router";
 const App = () => {
   return (
     <View>
-      <Text>Home Screen</Text>
       <TouchableOpacity
         onPress={() => {
           router.push("/auth/login");
