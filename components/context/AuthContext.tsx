@@ -8,6 +8,7 @@ import React, {
 import axios from "axios";
 import jwtDecode, { JwtPayload } from "jwt-decode";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
 
 interface AuthProps {
   authState?: {
@@ -19,8 +20,8 @@ interface AuthProps {
   onLogout?: () => void;
 }
 
-const TOKEN_KEY = "jwt";
-export const API_URL = "http://localhost:5000/api";
+const TOKEN_KEY: string = "jwt";
+export const API_URL = "http://localhost:8000/api";
 
 export const AuthContext = createContext<AuthProps>({});
 
@@ -57,6 +58,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const loadToken = async () => {
       try {
         const token = await AsyncStorage.getItem(TOKEN_KEY);
+        // const token = await SecureStore.getItemAsync(TOKEN_KEY);
         console.log("i am a token", token);
         if (token) {
           axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -78,6 +80,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const register = async (data: any) => {
     const { email, username, password } = data;
+    console.log(data);
     try {
       if (email && password && username) {
         const response = await axios.post(
@@ -100,35 +103,46 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const login = async (data: any) => {
+  const login = async (data) => {
     const { email, password } = data;
     if (!(email && password)) {
+      console.error("Email and password are required");
       return;
     }
+
     try {
       const response = await axios.post(`${API_URL}/auth/login`, data, {
         headers: {
           "Content-Type": "application/json",
         },
       });
-      if (response.data.token) {
+
+      if (response.data && response.data.token) {
+        console.log(response.data);
         const token = response.data.token;
         setAuthState({
           token,
           authenticated: true,
         });
         axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-        console.log("token before setting:", token.toString());
+        console.log("Token before setting:", token.toString());
+
         await AsyncStorage.setItem(TOKEN_KEY, token.toString());
+        // await SecureStore.setItemAsync(TOKEN_KEY, token.toString()); // Uncomment if using SecureStore
+      } else {
+        console.error("Token not found in response");
       }
     } catch (error) {
-      console.error("Login error:", error);
+      console.error(
+        "Login error:",
+        error.response ? error.response.data : error.message
+      );
     }
   };
-
   const logout = async () => {
     console.log("logout....");
     await AsyncStorage.removeItem(TOKEN_KEY);
+    // await SecureStore.deleteItemAsync(TOKEN_KEY);
     delete axios.defaults.headers.common["Authorization"];
     setAuthState({
       token: null,
